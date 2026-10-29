@@ -45,9 +45,149 @@ Un aparato manual que se pone junto a los basureros, con el propósito de aplast
 1. Clonar el repositorio
 2. Instalar librerías (ver `software/librerias/`)
 3. Cargar código en ESP32/Arduino
-4. [Pasos adicionales]
+4. 
+#include <HX711.h>
 
----
+HX711 balanza;
+
+const byte ROJO = 8;
+const byte AMARILLO = 9;
+const byte VERDE = 10;
+
+// Conservamos tu calibracion
+const float FACTOR = 391.6224;
+
+float cero = 0;
+bool lista = false;
+
+void apagarLuces() {
+  digitalWrite(ROJO, LOW);
+  digitalWrite(AMARILLO, LOW);
+  digitalWrite(VERDE, LOW);
+}
+
+bool medir(float &resultado) {
+  float suma = 0;
+
+  for (int i = 0; i < 5; i++) {
+    if (!balanza.wait_ready_timeout(1000)) {
+      apagarLuces();
+      Serial.println("ERROR: HX711 no responde.");
+      return false;
+    }
+
+    long dato = balanza.read();
+
+    if (dato == -1) {
+      apagarLuces();
+      Serial.println("ERROR de lectura.");
+      return false;
+    }
+
+    suma += dato;
+    delay(150);
+  }
+
+  resultado = suma / 5.0;
+  return true;
+}
+
+// Poner en cero automaticamente o mediante 't'
+void hacerCero() {
+  lista = false;
+  apagarLuces();
+
+  Serial.println("Realizando tara...");
+
+  float lectura;
+
+  if (medir(lectura)) {
+    cero = lectura;
+    lista = true;
+    Serial.println("CERO LISTO.");
+    Serial.println("Semaforo funcionando.");
+  } else {
+    Serial.println("ERROR: Reinicia con la plataforma vacia.");
+  }
+}
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(ROJO, OUTPUT);
+  pinMode(AMARILLO, OUTPUT);
+  pinMode(VERDE, OUTPUT);
+
+  apagarLuces();
+
+  // DT al pin 2, SCK al pin 3
+  balanza.begin(2, 3);
+
+  // Esperar a que el sensor se estabilice
+  delay(1500);
+
+  // AHORA LA TARA ES AUTOMATICA
+  hacerCero();
+
+  Serial.println("Sistema iniciado.");
+  Serial.println("Comando t: nueva tara.");
+  Serial.println("Comando p: consultar peso.");
+}
+
+void loop() {
+  bool mostrarPeso = false;
+
+  // Comandos opcionales cuando hay computador
+  while (Serial.available()) {
+    char comando = Serial.read();
+
+    if (comando == 't' || comando == 'T') {
+      hacerCero();
+    }
+
+    if (comando == 'p' || comando == 'P') {
+      mostrarPeso = true;
+    }
+  }
+
+  if (!lista) {
+    apagarLuces();
+    return;
+  }
+
+  float lectura;
+
+  if (!medir(lectura)) {
+    return;
+  }
+
+  float peso = (lectura - cero) / FACTOR;
+
+  digitalWrite(AMARILLO, LOW);
+
+  if (peso > 32.0) {
+    // MAYOR A 32 GRAMOS: ROJO
+    digitalWrite(VERDE, LOW);
+    digitalWrite(ROJO, HIGH);
+
+  } else if (peso >= 2.0) {
+    // ENTRE 2 Y 32 GRAMOS: VERDE
+    digitalWrite(ROJO, LOW);
+    digitalWrite(VERDE, HIGH);
+
+  } else {
+    // MENOS DE 2 GRAMOS: APAGADO
+    apagarLuces();
+  }
+
+  if (mostrarPeso) {
+    Serial.print("Peso: ");
+    Serial.print(peso, 2);
+    Serial.println(" g");
+  }
+}
+
+ Modelo 3d subido.
 
 ##  Checklist de Entrega
 
