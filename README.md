@@ -16,7 +16,7 @@ Un aparato manual que se pone junto a los basureros, con el propósito de aplast
 
 ### Estado del Proyecto
 - **Versión actual:** v3.0
-- **Última actualización:** [Fecha]
+- **Última actualización:** 30-10-2025
 - **Estado:** Borrador
 
 
@@ -45,7 +45,7 @@ Un aparato manual que se pone junto a los basureros, con el propósito de aplast
 1. Clonar el repositorio
 2. Instalar librerías (ver `software/librerias/`)
 3. Cargar código en ESP32/Arduino
-4. 
+4. Código Arduino:
 #include <HX711.h>
 
 HX711 balanza;
@@ -188,6 +188,7 @@ void loop() {
 }
 
  Modelo 3d subido.
+Ambos hechos con ayuda de inteligencia artificial***
 
 ##  Checklist de Entrega
 
@@ -206,12 +207,12 @@ void loop() {
 - [ ] Renders de alta calidad (1+ ángulos)
 - [ ] Planos técnicos
 
-### Testing ✓
+### Testing 
 - [ ] Reporte de testing con usuarios (mín. 5)
 - [ ] Evidencias fotográficas/videos
 - [ ] Datos cuantitativos
 
-### Documentación ✓
+### Documentación 
 - [ ] Reporte final (máx. 15 páginas)
 - [ ] Presentación (10 min)
 
